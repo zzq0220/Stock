@@ -54,15 +54,14 @@ for code,group in df.groupby('code'):
         if i == len(group_indices)-1:
            continue
 
-        #i日涨停（该涨停为第一个涨停），i+1日开收盘差值<=2，振幅>4，有上影线。i+1日成交量大于i日
+        #i日涨停（该涨停为第一个涨停），i+1日开收盘差值<=2，振幅>4，有上影线。i+1日成交量大于i日2倍，i日成交量大于i-1 i-2平均值的2倍
         if (group.loc[i,'rate_close'] >=9.9
                 and group.loc[i,'limit_up_streak'] ==1
                 and abs(group.loc[i+1,'rate_open'] - group.loc[i+1,'rate_close']) <= 2
                 and group.loc[i+1,'zhenfu'] >4
                 and group.loc[i+1,'rate_high']>group.loc[i+1,'rate_open']
-                and group.loc[i+1,'rate_high']
                 and group.loc[i+1,'volumn']>2*group.loc[i,'volumn']
-                and group.loc[i,'volumn'] >(group.loc[i-1,'volumn']+group.loc[i-2,'volumn'])/2):
+                and group.loc[i,'volumn'] >(group.loc[i-1,'volumn']+group.loc[i-2,'volumn'])/2)*2:
            day = group.loc[i,'day']
            code = group.loc[i,'code']
            result_list.append({'day': day, 'code': code})
