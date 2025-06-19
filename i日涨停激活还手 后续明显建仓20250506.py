@@ -20,9 +20,9 @@ from
 	public.stock_price_cleaned a
 left join public.stock_name b on a.code =b.code
 where 
-	day >='2025-03-01'
-	and day <= '2025-05-01'
---     and a.code ='000062'
+	day >='2025-04-01'
+	and day <= '2025-04-29'
+--     and a.code ='601083'
         """
 
 df = pd.read_sql_query(sql1, engine)
@@ -61,13 +61,13 @@ for code,group in df.groupby('code'):
         # if i <= 4:
         #    continue
 
-        if i > len(group)-5:
+        if i >= len(group)-2:
            continue
 
         temp_index = min(i+5,len(group))
         end_index = min(i+13,len(group))
 
-        watch_window = group.loc[i+3:end_index]
+        watch_window = group.loc[i+2:end_index]
 
         red_df =watch_window[watch_window['color']=='red']
         green_df =watch_window[watch_window['color']=='green']
@@ -78,9 +78,9 @@ for code,group in df.groupby('code'):
 
         if (group.loc[i,'is_limit_up']==True and group.loc[i,'limit_up_streak']<=2 #i日为涨停，最多2板
                 and group.loc[i+1,'is_limit_up']==False   #第二天不是涨停
-                and group.loc[i+1:temp_index]['rate_close'].sum()<=2
+                and group.loc[i+1:temp_index]['rate_close'].sum()<=2 #i+1至i+5累计涨幅小于2
                 and len(watch_window[watch_window['color']=='red'])>=2 #最少有两天阳线
-                and watch_window[watch_window['color']=='red']['volumn'].mean() >= watch_window[watch_window['color']=='green']['volumn'].mean() * 1.3
+                and ((watch_window[watch_window['color']=='red']['volumn'].mean() >= watch_window[watch_window['color']=='green']['volumn'].mean() * 1.3) or (watch_window[watch_window['color']=='red']['turnover'].mean() >= 8))
                 and len(watch_window[watch_window['is_limit_up']==True]) == 0 #观察窗口内无涨停
             ):
 
@@ -90,5 +90,8 @@ for code,group in df.groupby('code'):
            result_list.append({'day': day, 'code': code, 'name': name})
 
 result_df = pd.DataFrame(result_list)
-result_df.to_excel('../i日激活换手建仓20250507 new.xlsx')
+# result_df.to_excel('../i日激活换手建仓.xlsx')
 print(result_df)
+
+
+#中恒设计 涨停后成交量为之前的四倍
